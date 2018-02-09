@@ -1,5 +1,6 @@
 package com.seven.wechat.service.impl;
 
+import com.baomidou.mybatisplus.toolkit.IdWorker;
 import com.seven.core.BaseServiceImpl;
 import com.seven.wechat.bean.Account;
 import com.seven.wechat.bean.ReportModel;
@@ -23,11 +24,16 @@ public class AccountServiceImpl extends BaseServiceImpl<AccountMapper, Account> 
     @Autowired
     ArticleService articleService;
 
-    @Transactional(rollbackFor = Exception.class)
-    @Async("reportTaskExecutor")
     @Override
+    @Async("reportTaskExecutor")
+    @Transactional(rollbackFor = Exception.class)
     public void batchSave(ReportModel model) {
-        insert(model.parent());
-        articleService.insertBatch(model.getArticles());
+        if (model == null) {
+            return;
+        }
+        Account account = model.parent();
+        account.setId(IdWorker.getId());
+        baseMapper.replaceInsert(account);
+        articleService.batchSave(model.getArticles());
     }
 }

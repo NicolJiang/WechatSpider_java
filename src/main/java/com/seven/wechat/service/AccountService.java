@@ -12,4 +12,5 @@ import com.seven.wechat.bean.ReportModel;
 public interface AccountService extends IBaseService<Account> {
 
     void batchSave(ReportModel model);
+
 }

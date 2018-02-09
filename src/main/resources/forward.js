@@ -7,9 +7,9 @@
  * @author 最爱吃小鱼
  */
 
+var url = require('url');
 var http = require('http');
 var querystring = require('querystring');
-
 
 module.exports = {
     // 模块介绍
@@ -24,9 +24,16 @@ module.exports = {
             if(responseDetail.response.statusCode != 200) {
                 return;
             }
-            // 查看历史消息页面
+            // 点击进入"查看历史页面"
             if(/mp\/profile_ext\?action=home/i.test(requestDetail.url)){
-                combProfileData(responseDetail.response.body.toString())
+                // 1. 对第一页历史数据的抓取
+                combHtmlProfileData(responseDetail.response.body.toString());
+                // 2. 重写返回的body, 插入自动向下翻滚的JS
+                return insertAutoNextJS(responseDetail, true);
+            }
+            // 向下翻页的数据的AJAX请求处理
+            if(/mp\/profile_ext\?action=getmsg/i.test(requestDetail.url)){
+                combJsonProfileData(requestDetail.url, responseDetail.response.body.toString());
                 return;
             }
 
@@ -50,8 +57,8 @@ function escape2Html(str){
 }
 // 整理文章
 function combArticles(content, biz) {
-    content = JSON.parse(escape2Html(content).replace(/\\\//g,'/'));
-    content = content.list;
+    // content = JSON.parse(escape2Html(content).replace(/\\\//g,'/'));
+    // content = content.list;
     var articles = [];
     for (var i=0, len=content.length ; i < len ; i++) {
         var post = content[i];
@@ -72,9 +79,8 @@ function combArticles(content, biz) {
     return articles;
 }
 
-function combProfileData(serverResData) {
+function combHtmlProfileData(serverResData) {
     var woa = {};
-    console.log("==============================")
 
     // 解析公众号的数据
     woa.nickname = /var nickname = "(.+?)"/.exec(serverResData)[1];
@@ -84,16 +90,31 @@ function combProfileData(serverResData) {
 
     // 解析文章列表数据
     var msgList = /var msgList = '(.+)';\n/.exec(serverResData)[1];
+    msgList = JSON.parse(escape2Html(msgList).replace(/\\\//g,'/'));
+    msgList = msgList.list;
     woa.articles = combArticles(msgList, woa.biz);
 
-    reportData(woa, '/spider/report');
+    //console.log(woa.articles)
 
+    reportData(woa, '/spider/firstpage');
 
-    console.log("==============================")
+    console.log("抓取历史的第一页数据完成")
+}
+
+function combJsonProfileData(link, content) {
+    var identifier = querystring.parse(url.parse(link).query);
+    var biz = identifier.__biz;
+
+    content = JSON.parse(content);
+    content = JSON.parse(content.general_msg_list);
+    var articles = combArticles(content.list, biz)
+    reportData(articles, '/spider/nextpage');
+    console.log("抓取下拉的数据完成")
 }
 
 function reportData(data, path) {
-    //console.log(data);
+    return;
+    // console.log(data);
 
     var post_data = querystring.stringify({
         content: JSON.stringify(data)
@@ -121,4 +142,39 @@ function reportData(data, path) {
 
     req.write(post_data);
     req.end();
+}
+
+/**
+ * 往历史详情页插入自动下拉翻页的代码
+ *
+ * @param responseDetail
+ */
+function insertAutoNextJS(responseDetail, bool) {
+    console.log("重写返回内容的body, 插入自动向下翻滚的JS")
+    var nextJS = getAutoNextJS();
+    var newResponse = Object.assign({}, responseDetail.response);
+    newResponse.body += nextJS;
+    if (bool) {
+        console.log(bool);
+        return {
+            response: newResponse
+        };
+    }
+    return null;
+}
+
+function getAutoNextJS() {
+    var nextJS = '';
+    nextJS += '<script type="text/javascript">';
+    nextJS += '    var end = document.createElement("p");';
+    nextJS += '    document.body.appendChild(end);';
+    nextJS += '    (function scrollDown(){';
+    nextJS += '        end.scrollIntoView();';
+    nextJS += '        var loadMore = document.getElementsByClassName("loadmore with_line")[0];';
+    nextJS += '        if (loadMore.style.display) {';
+    nextJS += '            setTimeout(scrollDown,Math.floor(Math.random()*2000+1000));';
+    nextJS += '        } ';
+    nextJS += '    })();';
+    nextJS += '<\/script>';
+    return nextJS;
 }

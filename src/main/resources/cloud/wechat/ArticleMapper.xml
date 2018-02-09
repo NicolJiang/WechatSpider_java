@@ -2,4 +2,22 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.seven.wechat.cloud.ArticleMapper">
 
+    <insert id="replaceInsert">
+        REPLACE INTO article (
+            id,biz,title,digest,content_url,source_url,author,cover,copyright_stat,datetime
+        )
+        VALUES (
+            #{bean.id, jdbcType=NUMERIC},
+            #{bean.biz, jdbcType=VARCHAR},
+            #{bean.title, jdbcType=VARCHAR},
+            #{bean.digest, jdbcType=VARCHAR},
+            #{bean.contentUrl, jdbcType=VARCHAR},
+            #{bean.sourceUrl, jdbcType=VARCHAR},
+            #{bean.author, jdbcType=VARCHAR},
+            #{bean.cover, jdbcType=VARCHAR},
+            #{bean.copyrightStat, jdbcType=NUMERIC},
+            #{bean.datetime, jdbcType=NUMERIC}
+        )
+    </insert>
+
 </mapper>
