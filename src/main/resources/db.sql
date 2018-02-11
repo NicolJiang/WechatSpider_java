@@ -11,7 +11,7 @@
  Target Server Version : 50637
  File Encoding         : 65001
 
- Date: 09/02/2018 23:14:08
+ Date: 11/02/2018 17:24:01
 */
 
 SET NAMES utf8mb4;
@@ -36,8 +36,9 @@ CREATE TABLE `account` (
 -- ----------------------------
 DROP TABLE IF EXISTS `article`;
 CREATE TABLE `article` (
-  `id` bigint(20) NOT NULL,
+  `id` bigint(20) NOT NULL COMMENT '主键',
   `biz` varchar(50) NOT NULL COMMENT '公众号唯一标识',
+  `mid` bigint(20) NOT NULL COMMENT '公众号文章的ID',
   `title` varchar(100) NOT NULL COMMENT '文章标题',
   `digest` varchar(200) DEFAULT NULL COMMENT '文章副标题',
   `content` text COMMENT '文章内容',
@@ -49,9 +50,10 @@ CREATE TABLE `article` (
   `read_num` int(11) NOT NULL DEFAULT '0' COMMENT '阅读量',
   `like_num` int(11) NOT NULL DEFAULT '0' COMMENT '点赞量',
   `datetime` bigint(20) NOT NULL COMMENT '发布时间',
+  `idx` int(11) NOT NULL DEFAULT '0' COMMENT '文章发布位置，首条、二条等等\n',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_biz_title` (`title`,`biz`),
-  KEY `idx_biz` (`biz`)
+  UNIQUE KEY `uk_biz_mid` (`biz`,`mid`),
+  KEY `idx_biz` (`biz`,`mid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='微信公众号文章';
 
 SET FOREIGN_KEY_CHECKS = 1;
