@@ -19,7 +19,7 @@ cd WechatSpider
 npm install -g anyproxy
 
 // 启动 AnyProxy
-anyproxy --intercept --silent true  --rule ~/WechatSpider/src/main/resources/spider.js --rule cheerio
+anyproxy --intercept --silent true  --rule ~/WechatSpider/src/main/resources/spider.js 
 
 // 打包项目
 mvn clean install -Dmaven.test.skip=true
