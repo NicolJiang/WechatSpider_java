@@ -1,5 +1,6 @@
 package com.seven.wechat.service.impl;
 
+import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.toolkit.IdWorker;
 import com.seven.core.BaseServiceImpl;
 import com.seven.wechat.bean.Article;
@@ -32,5 +33,34 @@ public class ArticleServiceImpl extends BaseServiceImpl<ArticleMapper, Article> 
             article.setId(IdWorker.getId());
             baseMapper.replaceInsert(article);
         }
+    }
+
+    @Override
+    @Async("reportTaskExecutor")
+    @Transactional(rollbackFor = Exception.class)
+    public void updateContent(Article article) {
+        Article bean = selectOne(new EntityWrapper<Article>().eq("biz", article.getBiz()).eq("mid", article.getMid()));
+        if (bean == null) {
+            return;
+        }
+        Article updateObj = new Article();
+        updateObj.setId(bean.getId());
+        updateObj.setContent(article.getContent());
+        updateById(updateObj);
+    }
+
+    @Override
+    @Async("reportTaskExecutor")
+    @Transactional(rollbackFor = Exception.class)
+    public void updateReadAndLikeNum(Article article) {
+        Article bean = selectOne(new EntityWrapper<Article>().eq("biz", article.getBiz()).eq("mid", article.getMid()));
+        if (bean == null) {
+            return;
+        }
+        Article updateObj = new Article();
+        updateObj.setId(bean.getId());
+        updateObj.setReadNum(article.getReadNum());
+        updateObj.setLikeNum(article.getLikeNum());
+        updateById(updateObj);
     }
 }

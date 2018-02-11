@@ -4,11 +4,12 @@
 
     <insert id="replaceInsert">
         REPLACE INTO article (
-            id,biz,title,digest,content_url,source_url,author,cover,copyright_stat,datetime
+            id,biz,mid,title,digest,content_url,source_url,author,cover,copyright_stat,datetime,idx
         )
         VALUES (
             #{bean.id, jdbcType=NUMERIC},
             #{bean.biz, jdbcType=VARCHAR},
+            #{bean.mid, jdbcType=NUMERIC},
             #{bean.title, jdbcType=VARCHAR},
             #{bean.digest, jdbcType=VARCHAR},
             #{bean.contentUrl, jdbcType=VARCHAR},
@@ -16,7 +17,8 @@
             #{bean.author, jdbcType=VARCHAR},
             #{bean.cover, jdbcType=VARCHAR},
             #{bean.copyrightStat, jdbcType=NUMERIC},
-            #{bean.datetime, jdbcType=NUMERIC}
+            #{bean.datetime, jdbcType=NUMERIC},
+            #{bean.idx, jdbcType=NUMERIC}
         )
     </insert>
 

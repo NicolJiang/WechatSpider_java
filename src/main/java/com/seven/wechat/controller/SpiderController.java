@@ -15,8 +15,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author 最爱吃小鱼
@@ -25,10 +23,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public class SpiderController {
 
     private Logger log = LoggerFactory.getLogger(SpiderController.class);
-    /**
-     * 更新时将biz放入，更新截止时删除, lock保证发起的调用保持顺序执行
-     */
-    private final Map<String, Object> bizMap = new ConcurrentHashMap<>();
 
     @Autowired
     AccountService accountService;
@@ -39,35 +33,59 @@ public class SpiderController {
     // 上传微信公众号信息及文章信息, 历史记录的第一页
     @RequestMapping("/spider/firstpage")
     public void firstpage(String biz, String content) {
-        Object lock = new Object();
-        synchronized (lock) {
-            if (StringUtils.isBlank(content)) {
+        if (StringUtils.isBlank(content)) {
 
-                return;
-            }
-            ReportModel model = JSONObject.parseObject(content, ReportModel.class);
-            if (model == null) {
-                return;
-            }
-            accountService.batchSave(model);
-            bizMap.put(biz, lock);
+            return;
         }
+        ReportModel model = JSONObject.parseObject(content, ReportModel.class);
+        if (model == null) {
+            return;
+        }
+        accountService.batchSave(model);
+        log.debug("已抓取微信公众号文章{}条", model.getArticles().size());
     }
 
     // 上传微信公众号信息及文章信息, 历史记录下拉数据
     @RequestMapping("/spider/nextpage")
     public void nextpage(String biz, String content) {
-        Object lock = bizMap.get(biz);
-        synchronized (lock) {
-            if (StringUtils.isBlank(content)) {
-                return;
-            }
-            List<Article> articles = JSONArray.parseArray(content, Article.class);
-            if (CollectionUtils.isEmpty(articles)) {
-                return;
-            }
-            articleService.batchSave(articles);
+        if (StringUtils.isBlank(content)) {
+            return;
         }
+        List<Article> articles = JSONArray.parseArray(content, Article.class);
+        if (CollectionUtils.isEmpty(articles)) {
+            return;
+        }
+        articleService.batchSave(articles);
+        log.debug("已抓取微信公众号文章{}条", articles.size());
+    }
+
+    // 更新文章内容
+    @RequestMapping("/spider/updateArticleContent")
+    public void updateArticleContent(String biz, String content) {
+        if (StringUtils.isBlank(content)) {
+            return;
+        }
+        Article article = JSONArray.parseObject(content, Article.class);
+        if (article == null || StringUtils.isBlank(article.getContent())) {
+            return;
+        }
+        articleService.updateContent(article);
+        log.debug("微信公众号文章[biz={}, mid={}]已更新内容", biz, article.getMid());
+    }
+
+    // 上传微信公众号信息及文章信息, 历史记录下拉数据
+    @RequestMapping("/spider/updateArticleNum")
+    public void updateArticleNum(String biz, String content) {
+        if (StringUtils.isBlank(content)) {
+            return;
+        }
+        Article article = JSONArray.parseObject(content, Article.class);
+        if (article == null || article.getReadNum() == null || article.getLikeNum() == null) {
+            return;
+        }
+        articleService.updateReadAndLikeNum(article);
+        log.debug("微信公众号文章[biz={}, mid={}]已更新点赞量({})，阅读量({})",
+                biz, article.getMid(), article.getLikeNum(), article.getReadNum());
     }
 
 

@@ -1,0 +1,14 @@
+{
+  "name": "resources",
+  "version": "1.0.0",
+  "description": "微信爬虫",
+  "main": "forward.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "最爱吃小鱼",
+  "license": "ISC",
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.2"
+  }
+}

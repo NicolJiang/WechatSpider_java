@@ -1,3 +1,5 @@
 .idea
 target
 application-me.properties
+src/main/resources/node_modules
+package-lock.json

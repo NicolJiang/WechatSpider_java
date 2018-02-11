@@ -24,6 +24,9 @@ public class Article implements Serializable {
     // 公众号唯一标识 
     @TableField("biz")
     private String biz;
+    // 公众号文章的ID
+    @TableField("mid")
+    private Long mid;
     // 文章标题 
     @TableField("title")
     private String title;
@@ -57,25 +60,12 @@ public class Article implements Serializable {
     // 发布时间 
     @TableField("datetime")
     private Long datetime;
-    
+    // 文章发布位置，首条、二条等等
+    @TableField("idx")
+    private Integer idx;
+
     /** 默认构造函数 */
     public Article() {
-    }
-    
-    /** 全参构造函数 */
-    public Article(String biz, String title, String digest, String content, String contentUrl, String sourceUrl, String author, String cover, Integer copyrightStat, Integer readNum, Integer likeNum, Long datetime) {
-      this.biz = biz;
-      this.title = title;
-      this.digest = digest;
-      this.content = content;
-      this.contentUrl = contentUrl;
-      this.sourceUrl = sourceUrl;
-      this.author = author;
-      this.cover = cover;
-      this.copyrightStat = copyrightStat;
-      this.readNum = readNum;
-      this.likeNum = likeNum;
-      this.datetime = datetime;
     }
      
     public Long getId() {
@@ -155,5 +145,17 @@ public class Article implements Serializable {
     }
     public void setDatetime(Long datetime) {
         this.datetime = datetime;
+    }
+    public Long getMid() {
+        return mid;
+    }
+    public void setMid(Long mid) {
+        this.mid = mid;
+    }
+    public Integer getIdx() {
+        return idx;
+    }
+    public void setIdx(Integer idx) {
+        this.idx = idx;
     }
 }

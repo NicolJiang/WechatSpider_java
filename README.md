@@ -19,7 +19,7 @@ cd WechatSpider
 npm install -g anyproxy
 
 // 启动 AnyProxy
-anyproxy --intercept --silent true  --rule ~/WechatSpider/src/main/resources/spider.js
+anyproxy --intercept --silent true  --rule ~/WechatSpider/src/main/resources/spider.js --rule cheerio
 
 // 打包项目
 mvn clean install -Dmaven.test.skip=true
@@ -31,6 +31,13 @@ java -jar target/WechatSplider-1.0-SNAPSHOT.jar
 # 手机代理设置
 1. `host`设置服务器的地址
 2. `port=8001`
+
+> 由于JS引入了`cheerio`, 需要在`resouces`目录下面执行 `npm install` 命令安装
+
+# 功能概述
+1. `查看历史消息` 数据已全部自动抓取
+2. `文章内容`、`点赞量`，`阅读量` 已能抓取到，暂不能自动翻页抓取
+3. `评论数及内容` 暂未完成
 
 # 参考资料
 

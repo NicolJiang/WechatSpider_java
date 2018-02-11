@@ -15,4 +15,7 @@ public interface ArticleService extends IBaseService<Article> {
 
     void batchSave(List<Article> articles);
 
+    void updateContent(Article article);
+
+    void updateReadAndLikeNum(Article article);
 }
