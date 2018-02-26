@@ -11,7 +11,7 @@
  Target Server Version : 50637
  File Encoding         : 65001
 
- Date: 11/02/2018 17:24:01
+ Date: 26/02/2018 15:04:28
 */
 
 SET NAMES utf8mb4;
@@ -29,7 +29,7 @@ CREATE TABLE `account` (
   `crawl_time` bigint(20) NOT NULL COMMENT '抓取时间，时间戳',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_biz` (`biz`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='微信公众号信息';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='微信公众号信息';
 
 -- ----------------------------
 -- Table structure for article
@@ -54,6 +54,6 @@ CREATE TABLE `article` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_biz_mid` (`biz`,`mid`),
   KEY `idx_biz` (`biz`,`mid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='微信公众号文章';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='微信公众号文章';
 
 SET FOREIGN_KEY_CHECKS = 1;
