@@ -18,4 +18,6 @@ public interface ArticleService extends IBaseService<Article> {
     void updateContent(Article article);
 
     void updateReadAndLikeNum(Article article);
+
+    String selectNextArticleLink(String biz, Long mid);
 }

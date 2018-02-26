@@ -1,6 +1,7 @@
 package com.seven.wechat.service.impl;
 
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.baomidou.mybatisplus.mapper.Wrapper;
 import com.baomidou.mybatisplus.toolkit.IdWorker;
 import com.seven.core.BaseServiceImpl;
 import com.seven.wechat.bean.Article;
@@ -30,13 +31,15 @@ public class ArticleServiceImpl extends BaseServiceImpl<ArticleMapper, Article> 
             return;
         }
         for (Article article : articles) {
+            if (article.getMid() == null) {
+                continue;
+            }
             article.setId(IdWorker.getId());
             baseMapper.replaceInsert(article);
         }
     }
 
     @Override
-    @Async("reportTaskExecutor")
     @Transactional(rollbackFor = Exception.class)
     public void updateContent(Article article) {
         Article bean = selectOne(new EntityWrapper<Article>().eq("biz", article.getBiz()).eq("mid", article.getMid()));
@@ -62,5 +65,19 @@ public class ArticleServiceImpl extends BaseServiceImpl<ArticleMapper, Article> 
         updateObj.setReadNum(article.getReadNum());
         updateObj.setLikeNum(article.getLikeNum());
         updateById(updateObj);
+    }
+
+    @Override
+    public String selectNextArticleLink(String biz, Long mid) {
+        Wrapper<Article> wrapper = new EntityWrapper<>();
+        wrapper.eq("biz", biz);
+        wrapper.ne(mid != null, "mid", mid);
+        wrapper.isNull("content");
+        wrapper.last("limit 1");
+        Article next = super.selectOne(wrapper);
+        if (next != null) {
+            return next.getContentUrl();
+        }
+        return null;
     }
 }

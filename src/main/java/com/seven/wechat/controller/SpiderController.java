@@ -34,7 +34,6 @@ public class SpiderController {
     @RequestMapping("/spider/firstpage")
     public void firstpage(String biz, String content) {
         if (StringUtils.isBlank(content)) {
-
             return;
         }
         ReportModel model = JSONObject.parseObject(content, ReportModel.class);
@@ -61,16 +60,19 @@ public class SpiderController {
 
     // 更新文章内容
     @RequestMapping("/spider/updateArticleContent")
-    public void updateArticleContent(String biz, String content) {
+    public String updateArticleContent(String biz, String content) {
         if (StringUtils.isBlank(content)) {
-            return;
+            return articleService.selectNextArticleLink(biz, null);
         }
         Article article = JSONArray.parseObject(content, Article.class);
         if (article == null || StringUtils.isBlank(article.getContent())) {
-            return;
+            return articleService.selectNextArticleLink(biz, null);
         }
-        articleService.updateContent(article);
-        log.debug("微信公众号文章[biz={}, mid={}]已更新内容", biz, article.getMid());
+        if (article.getMid() != null) {
+            articleService.updateContent(article);
+            log.debug("微信公众号文章[biz={}, mid={}]已更新内容", biz, article.getMid());
+        }
+        return articleService.selectNextArticleLink(biz, article.getMid());
     }
 
     // 上传微信公众号信息及文章信息, 历史记录下拉数据

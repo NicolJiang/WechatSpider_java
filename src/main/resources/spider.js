@@ -8,11 +8,15 @@ var url = require('url');
 var http = require('http');
 var querystring = require('querystring');
 var cheerio = require('cheerio');
+var rp = require('request-promise');
 var config = {
-    autoNextScroll: false, // 是否自动下拉采取数据
+    host: 'http://127.0.0.1:8080', // 服务器地址配置
+    autoNextScroll: true, // 是否自动下拉采取数据
+    autoNextPage: true, // 是否自动下拉采取数据
     autoPostData: true, // 是否提交数据到服务器
     m: 3000, // 自动下拉的时间间隔 m ~ n 秒之间
-    n: 5000
+    n: 5000,
+    jumpInterval: 15 // 文章页跳转的时间间隔
 }
 
 module.exports = {
@@ -65,10 +69,25 @@ module.exports = {
 
             // 文章页跳转
             if (/\/s\?__biz/.test(link) || /mp\/appmsg\/show/.test(link)) {
-                var article = getArticle(link, responseDetail);
-                console.log(article);
-                serverPost(article.biz, article, '/spider/updateArticleContent');
-                return null;
+                var content = responseDetail.response.body.toString();
+                var article = getArticle(link, content);
+                let bb = async function() {
+                    return await serverPost(article.biz, article, "/spider/updateArticleContent").then((nextLink) => {
+                        if (nextLink == undefined || nextLink == null || nextLink == '') {
+                            return null;
+                        }
+                        var autoNextPageMeta = getAutoNextPageMeta(nextLink);
+                        console.log(nextLink);
+
+                        // 修改返回的body内容，插入meta
+                        var newResponse = Object.assign({}, responseDetail.response);
+                        newResponse.body = content.replace('</title>', '</title>' + autoNextPageMeta);
+                        return {
+                            response: newResponse
+                        };
+                    });
+                }
+                return bb();
             }
 
             // 微信公众号的跟贴评论
@@ -94,6 +113,8 @@ module.exports = {
     }
 };
 
+
+
 // 转义符换成普通字符
 function escape2Html(str){
     const arrEntities={'lt':'<','gt':'>','nbsp':' ','amp':'&','quot':'"'};
@@ -107,10 +128,9 @@ function escape2Html(str){
  * @param responseDetail
  * @returns {{biz: *, mid: *, idx: *, content: (*|jQuery|string)}}
  */
-function getArticle(link, responseDetail) {
-    var identifier = querystring.parse(url.parse(link).query);
-    var content = responseDetail.response.body.toString();
+function getArticle(link, content) {
     var $ = cheerio.load(content, { decodeEntities: false });
+    var identifier = querystring.parse(url.parse(link).query);
     var articleContent = $('#js_content').html() || '';
     if (articleContent.trim() == '') {
         return null;
@@ -123,7 +143,13 @@ function getArticle(link, responseDetail) {
     }
 }
 
-
+/**
+ * 取得文章的阅读量、点赞量等相关文章信息
+ *
+ * @param link
+ * @param responseDetail
+ * @returns {{biz: *, mid: *, idx: *, readNum: *, likeNum: *}}
+ */
 function getArticleOfReadNumAndLikeNum(link, responseDetail) {
     var identifier = querystring.parse(url.parse(link).query);
     content = JSON.parse(responseDetail.response.body.toString());
@@ -179,6 +205,8 @@ function getArticles(biz, content) {
     for (var i=0, len=content.length ; i < len ; i++) {
         var post = content[i];
         var cmi = post.comm_msg_info;
+        // 只采取图文消息的数据，目前所知type=3就只有一张图片，其它类型未知
+        if (cmi.type != 49) continue;
         var amei = post.app_msg_ext_info;
         var obj = getMidAndIdx(amei.content_url);
 
@@ -218,34 +246,33 @@ function getMidAndIdx(link) {
  * @param path 请求路径
  */
 function serverPost(biz, data, path) {
-    if (data == null || !config.autoPostData) {
-        return;
-    }
-    var post_data = querystring.stringify({
-        biz: biz,
-        content: JSON.stringify(data)
-    });
     var options = {
-        host: '127.0.0.1',
-        port: 8080,
-        path: path,
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Content-Length': post_data.length
-        }
+        uri: config.host + path,
+        form: {
+            biz: biz,
+            content: JSON.stringify(data)
+        },
+        json: true
     };
-    var req = http.request(options, function (serverFeedback) {
-        if (serverFeedback.statusCode == 200) {
-            // ignore
+
+    return rp(options).then(function (parsedBody) {
+        if (parsedBody.code == 1) {
+            console.log('--' + path + '------------------------');
+            //console.log(data);
+            return parsedBody.data;
         } else {
-            console.log("请求失败，请查看异常信息");
+            console.log('请求失败, 失败信息=' + parsedBody.message);
+            return null;
         }
     });
-    req.write(post_data);
-    req.end();
 }
 
+/**
+ * 组装自动向下滚动翻页的JS
+ *
+ * @returns {string}
+ */
 function getAutoNextScrollJS() {
     var nextJS = '';
     nextJS += '<script type="text/javascript">';
@@ -260,4 +287,14 @@ function getAutoNextScrollJS() {
     nextJS += '    })();';
     nextJS += '<\/script>';
     return nextJS;
+}
+
+/**
+ * 自动跳转到下一文章页的meta
+ *
+ * @param nextLink
+ * @returns {string}
+ */
+function getAutoNextPageMeta(nextLink) {
+    return '<meta http-equiv="refresh" content="' + config.jumpInterval + ';url=' + nextLink + '" />';
 }
