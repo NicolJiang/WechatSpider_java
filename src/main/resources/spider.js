@@ -10,7 +10,7 @@ var config = {
     crawlHistory: true, // 是否采集列表历史数据
     crawlArticle: true, // 是否采集文章数据
     crawlComment: true, // 是否采集评论数据
-    crawlLikeReadNum: true, // 是否文章的阅读量及点赞量
+    crawlLikeReadNum: true, // 是否采集文章的阅读量及点赞量
     autoNextScroll: true, // 是否自动下拉采取数据
     autoNextPage: true, // 是否自动文章翻页
     autoPostData: true, // 是否提交数据到服务器
