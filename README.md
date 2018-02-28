@@ -28,16 +28,16 @@ java -jar target/WechatSplider-1.0-SNAPSHOT.jar
 
 # 安装AnyProxy的RootCA
 浏览器打开`http://localhost:8002/`
-![ca](file/rootca.jpeg)
+<img src="file/rootca.jpeg" width = "350" height = "300" />
 使用手机扫描安装信任
 
 # 代理设置如下图，host填写启动服务的IP地址
-![设置anyproxy代理](file/config.jpeg)
+<img src="file/config.png" width = "324" height = "576"/>
 
 # 使用
 1. 打开微信的公众号，`查看历史信息`自动下拉翻滚抓取所有文章列表数据
 2. 文章列表数据抓取完毕后，点击任何一篇文章，打开文章后会抓取文章内容、阅读量、点赞量，评论等数据，10后自动跳转到下一篇文章的抓取，直到抓取完毕
-![抓取效果动态图片](file/phone.gif)
+<img src="file/phone.gif" width = "324" height = "576" />
 
 
 # 功能概述
@@ -67,7 +67,7 @@ var config = {
 ```
 
 # 原理图
-![flow](file/flow.jpeg)
+<img src="file/flow.jpeg" width = "500" height = "400" />
 
 
 # 参考资料
