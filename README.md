@@ -26,10 +26,10 @@ cd ~/WechatSpider
 java -jar target/WechatSplider-1.0-SNAPSHOT.jar
 ```
 
-# 安装AnyProxy的RootCA
+# 安装AnyProxy的RootCA, 手机扫描安装信任
 浏览器打开`http://localhost:8002/`
 <img src="file/rootca.jpeg" width = "350" height = "300" />
-使用手机扫描安装信任
+<img src="file/spider_6.jpeg" width = "350" height = "300" />
 
 # 代理设置如下图，host填写启动服务的IP地址
 <img src="file/config.png" width = "324" height = "576"/>
