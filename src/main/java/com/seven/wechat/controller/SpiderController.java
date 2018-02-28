@@ -3,9 +3,11 @@ package com.seven.wechat.controller;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.seven.wechat.bean.Article;
+import com.seven.wechat.bean.Comment;
 import com.seven.wechat.bean.ReportModel;
 import com.seven.wechat.service.AccountService;
 import com.seven.wechat.service.ArticleService;
+import com.seven.wechat.service.CommentService;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -30,6 +32,9 @@ public class SpiderController {
     @Autowired
     ArticleService articleService;
 
+    @Autowired
+    CommentService commentService;
+
     // 上传微信公众号信息及文章信息, 历史记录的第一页
     @RequestMapping("/spider/firstpage")
     public void firstpage(String biz, String content) {
@@ -41,7 +46,7 @@ public class SpiderController {
             return;
         }
         accountService.batchSave(model);
-        log.debug("已抓取微信公众号文章{}条", model.getArticles().size());
+        log.debug("已抓取微信公众号[biz={}]文章{}条", biz, model.getArticles().size());
     }
 
     // 上传微信公众号信息及文章信息, 历史记录下拉数据
@@ -55,7 +60,7 @@ public class SpiderController {
             return;
         }
         articleService.batchSave(articles);
-        log.debug("已抓取微信公众号文章{}条", articles.size());
+        log.debug("已抓取微信公众号[biz={}]文章{}条", biz, articles.size());
     }
 
     // 更新文章内容
@@ -81,7 +86,7 @@ public class SpiderController {
         if (StringUtils.isBlank(content)) {
             return;
         }
-        Article article = JSONArray.parseObject(content, Article.class);
+        Article article = JSONObject.parseObject(content, Article.class);
         if (article == null || article.getReadNum() == null || article.getLikeNum() == null) {
             return;
         }
@@ -89,6 +94,23 @@ public class SpiderController {
         log.debug("微信公众号文章[biz={}, mid={}]已更新点赞量({})，阅读量({})",
                 biz, article.getMid(), article.getLikeNum(), article.getReadNum());
     }
+
+
+    // 评论
+    @RequestMapping("/spider/comment")
+    public void comment(String biz, String content) {
+        if (StringUtils.isBlank(content)) {
+            return;
+        }
+        List<Comment> comments = JSONArray.parseArray(content, Comment.class);
+        if (CollectionUtils.isEmpty(comments)) {
+            return;
+        }
+        commentService.bachSave(comments);
+        log.debug("微信公众号文章评论[biz={}, 评论数={}]",
+                biz, comments.size());
+    }
+
 
 
 

@@ -4,7 +4,7 @@ package com.seven.core;
  * 自定义异常类 <br>
  * 封装各种系统级别异常， <br>
  * 
- * @author seven
+ * @author 最爱吃小鱼
  */
 @SuppressWarnings("serial")
 public class GlobalException extends RuntimeException {

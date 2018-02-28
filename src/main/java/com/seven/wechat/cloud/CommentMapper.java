@@ -1,7 +1,7 @@
 package com.seven.wechat.cloud;
 
 import com.baomidou.mybatisplus.mapper.BaseMapper;
-import com.seven.wechat.bean.Account;
+import com.seven.wechat.bean.Comment;
 import org.apache.ibatis.annotations.Param;
 
 /**
@@ -9,7 +9,7 @@ import org.apache.ibatis.annotations.Param;
  * @author 最爱吃小鱼
  *
  */
-public interface AccountMapper extends BaseMapper<Account> {
+public interface CommentMapper extends BaseMapper<Comment>{
 
-    void replaceInsert(@Param("bean") Account parent);
+    void replaceInsert(@Param("bean") Comment comment);
 }

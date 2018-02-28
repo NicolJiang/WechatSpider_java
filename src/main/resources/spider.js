@@ -4,21 +4,27 @@
  * @author 最爱吃小鱼
  */
 
+// 规则配置
+var config = {
+    host: 'http://127.0.0.1:8080', // 服务器地址配置
+    crawlHistory: true, // 是否采集列表历史数据
+    crawlArticle: true, // 是否采集文章数据
+    crawlComment: true, // 是否采集评论数据
+    crawlLikeReadNum: true, // 是否文章的阅读量及点赞量
+    autoNextScroll: true, // 是否自动下拉采取数据
+    autoNextPage: true, // 是否自动文章翻页
+    autoPostData: true, // 是否提交数据到服务器
+    m: 3000, // 自动下拉的时间间隔 m ~ n 秒之间
+    n: 5000,
+    jumpInterval: 10, // 文章页跳转的时间间隔
+    saveContentType: 'html'// 微信文章保存内容的形式: html/text
+}
+
 var url = require('url');
 var http = require('http');
 var querystring = require('querystring');
 var cheerio = require('cheerio');
 var rp = require('request-promise');
-var config = {
-    host: 'http://127.0.0.1:8080', // 服务器地址配置
-    autoNextScroll: true, // 是否自动下拉采取数据
-    autoNextPage: true, // 是否自动下拉采取数据
-    autoPostData: true, // 是否提交数据到服务器
-    m: 3000, // 自动下拉的时间间隔 m ~ n 秒之间
-    n: 5000,
-    jumpInterval: 15 // 文章页跳转的时间间隔
-}
-
 module.exports = {
     // 模块介绍
     summary: '微信公众号爬虫',
@@ -30,6 +36,9 @@ module.exports = {
 
             // 历史页面第一页数据
             if(/mp\/profile_ext\?action=home/i.test(link)){
+                if (!config.crawlHistory) {
+                    return null;
+                }
                 // 取得响应内容
                 var serverResData = responseDetail.response.body.toString();
                 // 取得公众号唯一标识biz
@@ -44,7 +53,6 @@ module.exports = {
                 if (!config.autoNextScroll) {
                     return null;
                 }
-
                 // 根据返回的数据状态组装相应的自动滚动加载JS
                 var autoNextScrollJS = getAutoNextScrollJS();
 
@@ -58,6 +66,9 @@ module.exports = {
 
             // 向下翻页的数据的AJAX请求处理
             if(/mp\/profile_ext\?action=getmsg/i.test(link)){
+                if (!config.crawlHistory) {
+                    return null;
+                }
                 var biz = getBizByLink(link);
                 var content = JSON.parse(responseDetail.response.body.toString());
                 content = JSON.parse(content.general_msg_list);
@@ -69,6 +80,9 @@ module.exports = {
 
             // 文章页跳转
             if (/\/s\?__biz/.test(link) || /mp\/appmsg\/show/.test(link)) {
+                if (!config.crawlArticle) {
+                    return null;
+                }
                 var content = responseDetail.response.body.toString();
                 var article = getArticle(link, content);
                 let bb = async function() {
@@ -92,12 +106,21 @@ module.exports = {
 
             // 微信公众号的跟贴评论
             if (/\/mp\/appmsg_comment/.test(link)){
-                console.log("TODO 微信公众号的跟贴评论");
+                if (!config.crawlComment) {
+                    return null;
+                }
+                var comments = getComments(link, responseDetail);
+                if (comments.length > 0) {
+                    serverPost(comments[0].biz, comments, '/spider/comment');
+                }
                 return null;
             }
 
             // 获取点赞量和阅读量
             if (link.indexOf('getappmsgext') > -1) {
+                if (!config.crawlLikeReadNum) {
+                    return null;
+                }
                 var article = getArticleOfReadNumAndLikeNum(link, responseDetail);
                 serverPost(article.biz, article, '/spider/updateArticleNum');
                 return null;
@@ -131,7 +154,7 @@ function escape2Html(str){
 function getArticle(link, content) {
     var $ = cheerio.load(content, { decodeEntities: false });
     var identifier = querystring.parse(url.parse(link).query);
-    var articleContent = $('#js_content').html() || '';
+    var articleContent = config.saveContentType=='html' ? $('#js_content').html() : $('#js_content').text();
     if (articleContent.trim() == '') {
         return null;
     }
@@ -152,7 +175,7 @@ function getArticle(link, content) {
  */
 function getArticleOfReadNumAndLikeNum(link, responseDetail) {
     var identifier = querystring.parse(url.parse(link).query);
-    content = JSON.parse(responseDetail.response.body.toString());
+    var content = JSON.parse(responseDetail.response.body.toString());
     return {
         biz: identifier.__biz,
         mid: identifier.mid,
@@ -228,6 +251,34 @@ function getArticles(biz, content) {
 }
 
 /**
+ * 解析封装取得文章的评论信息
+ * @param link
+ * @param responseDetail
+ * @returns {Array}
+ */
+function getComments(link, responseDetail){
+    var identifier = querystring.parse(url.parse(link).query);
+    var comments = [];
+    var content = JSON.parse(responseDetail.response.body.toString());
+    var electedComment = content.elected_comment;
+    if (electedComment && electedComment.length) {
+        for (var i=0, len=electedComment.length ; i < len ; i++) {
+            comments.push({
+                biz: identifier.__biz,
+                mid: identifier.appmsgid,
+                contentId: electedComment[i].content_id,
+                nickName: electedComment[i].nick_name,
+                logoUrl: electedComment[i].logo_url,
+                content: electedComment[i].content,
+                createTime: electedComment[i].create_time,
+                likeNum: electedComment[i].like_num
+            });
+        }
+    }
+    return comments;
+}
+
+/**
  * 从连接取得mid及idx
  * @param link
  * @returns {{mid: *, idx: *}}
@@ -246,6 +297,11 @@ function getMidAndIdx(link) {
  * @param path 请求路径
  */
 function serverPost(biz, data, path) {
+    if (!config.autoPostData) {
+        return Promise.resolve().then(function(){
+            return null;
+        });
+    }
     var options = {
         method: 'POST',
         uri: config.host + path,
@@ -255,7 +311,6 @@ function serverPost(biz, data, path) {
         },
         json: true
     };
-
     return rp(options).then(function (parsedBody) {
         if (parsedBody.code == 1) {
             console.log('--' + path + '------------------------');

@@ -8,7 +8,7 @@ import java.util.List;
 
 /**
  * 
- * @author seven
+ * @author 最爱吃小鱼
  *
  */
 public interface ArticleService extends IBaseService<Article> {

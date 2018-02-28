@@ -6,7 +6,7 @@ import org.apache.ibatis.annotations.Param;
 
 /**
  * 
- * @author seven
+ * @author 最爱吃小鱼
  *
  */
 public interface ArticleMapper extends BaseMapper<Article>{

@@ -15,7 +15,7 @@ import java.util.LinkedHashMap;
 /**
  * controller拦截器，处理异常日志记录及返回，重写返回值
  * 
- * @author seven
+ * @author 最爱吃小鱼
  *
  */
 @ControllerAdvice

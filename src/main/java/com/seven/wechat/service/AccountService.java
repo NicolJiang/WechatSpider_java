@@ -6,7 +6,7 @@ import com.seven.wechat.bean.ReportModel;
 
 /**
  * 
- * @author seven
+ * @author 最爱吃小鱼
  *
  */
 public interface AccountService extends IBaseService<Account> {

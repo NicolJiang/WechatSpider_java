@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * 微信公众号信息的维护
  * 
- * @author seven
+ * @author 最爱吃小鱼
  *
  */
 @RestController

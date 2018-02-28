@@ -11,7 +11,7 @@ import com.baomidou.mybatisplus.annotations.TableName;
  * 微信公众号信息
  * 
  * 
- * @author seven
+ * @author 最爱吃小鱼
  * 
  */
 

@@ -9,7 +9,7 @@ import java.util.Map;
 /**
  * 服务器返值包装
  * 
- * @author seven
+ * @author 最爱吃小鱼
  *
  */
 @SuppressWarnings("serial")
