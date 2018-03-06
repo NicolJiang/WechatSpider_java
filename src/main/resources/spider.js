@@ -17,7 +17,8 @@ var config = {
     m: 3000, // 自动下拉的时间间隔 m ~ n 秒之间
     n: 5000,
     jumpInterval: 10, // 文章页跳转的时间间隔
-    saveContentType: 'html'// 微信文章保存内容的形式: html/text
+    saveContentType: 'html',// 微信文章保存内容的形式: html/text
+    localImg: true // 公众号的图片返回本地图片
 }
 
 var url = require('url');
@@ -25,9 +26,26 @@ var http = require('http');
 var querystring = require('querystring');
 var cheerio = require('cheerio');
 var rp = require('request-promise');
+var fs  = require("fs");
+var img = fs.readFileSync(__dirname + "/dog.jpg")
 module.exports = {
     // 模块介绍
     summary: '微信公众号爬虫',
+    // 发送请求拦截
+    *beforeSendRequest(requestDetail) {
+        if (!config.localImg) return null;
+        // 将请求图片变成本地图片，加快文章显示
+        if(/mmbiz\.qpic\.cn/i.test(requestDetail.url)){
+            const localResponse = {
+                statusCode: 200,
+                header: { 'Content-Type': 'image/jpg' },
+                body: img
+            };
+            return {
+                response: localResponse
+            };
+        }
+    },
     // 发送响应前处理
     *beforeSendResponse(requestDetail, responseDetail) {
         try {
@@ -155,7 +173,7 @@ function getArticle(link, content) {
     var $ = cheerio.load(content, { decodeEntities: false });
     var identifier = querystring.parse(url.parse(link).query);
     var articleContent = config.saveContentType=='html' ? $('#js_content').html() : $('#js_content').text();
-    if (articleContent.trim() == '') {
+    if (articleContent == '') {
         return null;
     }
     return {

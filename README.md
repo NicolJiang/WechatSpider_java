@@ -42,6 +42,8 @@ java -jar target/WechatSplider-1.0-SNAPSHOT.jar
 # 功能概述
 1. `查看历史消息` 数据全部自动下拉滚动抓取
 2. `文章内容`、`点赞量`，`阅读量`，`评论数及内容` 等 已能抓取到，已实现自动跳到下一个文章抓取
+3. 优化网络请求，图片请求换成
+<img style="-webkit-user-select: none;background-position: 0px 0px, 10px 10px;background-size: 20px 20px;background-image:linear-gradient(45deg, #eee 25%, transparent 25%, transparent 75%, #eee 75%, #eee 100%),linear-gradient(45deg, #eee 25%, white 25%, white 75%, #eee 75%, #eee 100%);" src="file/dog.jpg">
 
 # 抓取配置
 ```
