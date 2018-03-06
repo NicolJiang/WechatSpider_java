@@ -27,7 +27,7 @@ var querystring = require('querystring');
 var cheerio = require('cheerio');
 var rp = require('request-promise');
 var fs  = require("fs");
-var img = fs.readFileSync(__dirname + "/dog.jpg")
+var img = fs.readFileSync(__dirname + "/black.png")
 module.exports = {
     // 模块介绍
     summary: '微信公众号爬虫',
@@ -38,7 +38,7 @@ module.exports = {
         if(/mmbiz\.qpic\.cn/i.test(requestDetail.url)){
             const localResponse = {
                 statusCode: 200,
-                header: { 'Content-Type': 'image/jpg' },
+                header: { 'Content-Type': 'image/png' },
                 body: img
             };
             return {
