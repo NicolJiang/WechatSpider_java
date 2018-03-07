@@ -63,7 +63,8 @@ var config = {
     m: 3000, // 自动下拉的时间间隔 m ~ n 秒之间
     n: 5000,
     jumpInterval: 10, // 文章页跳转的时间间隔
-    saveContentType: 'html'// 微信文章保存内容的形式: html/text
+    saveContentType: 'html',// 微信文章保存内容的形式: html/text
+    localImg: true // 公众号的图片返回本地图片
 }
 ```
 
